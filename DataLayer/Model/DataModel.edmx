@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl" Namespace="DataModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2005">
+        <EntityContainer Name="DataModelTargetContainer" >
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="DataModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
+        <EntityContainer Name="DataModelContainer" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="UserSet" EntityType="DataModel.User" />
+          <EntitySet Name="UserProfileSet" EntityType="DataModel.UserProfile" />
+          <AssociationSet Name="UserProfileUser" Association="DataModel.UserProfileUser">
+            <End Role="UserProfile" EntitySet="UserProfileSet" />
+            <End Role="User" EntitySet="UserSet" />
+          </AssociationSet>
+          <EntitySet Name="RoleSet" EntityType="DataModel.Role" />
+          <AssociationSet Name="RoleUser" Association="DataModel.RoleUser">
+            <End Role="Role" EntitySet="RoleSet" />
+            <End Role="User" EntitySet="UserSet" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="User">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Guid" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Email" Type="String" Nullable="false" MaxLength="150" />
+          <Property Name="Password" Type="String" Nullable="false" />
+          <Property Name="Salt" Type="String" Nullable="false" />
+          <Property Name="Created" Type="DateTime" Nullable="false" />
+          <Property Name="Updated" Type="DateTime" Nullable="false" />
+          <NavigationProperty Name="UserProfile" Relationship="DataModel.UserProfileUser" FromRole="User" ToRole="UserProfile" />
+          <NavigationProperty Name="Roles" Relationship="DataModel.RoleUser" FromRole="User" ToRole="Role" />
+        </EntityType>
+        <EntityType Name="UserProfile">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="IdUser" Type="String" Nullable="false" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="150" />
+          <Property Name="FirstSurname" Type="String" Nullable="false" MaxLength="150" />
+          <Property Name="LastSurname" Type="String" Nullable="false" MaxLength="150" />
+          <NavigationProperty Name="User" Relationship="DataModel.UserProfileUser" FromRole="UserProfile" ToRole="User" />
+        </EntityType>
+        <Association Name="UserProfileUser">
+          <End Type="DataModel.UserProfile" Role="UserProfile" Multiplicity="1" />
+          <End Type="DataModel.User" Role="User" Multiplicity="1" />
+        </Association>
+        <EntityType Name="Role">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="100" />
+          <NavigationProperty Name="Users" Relationship="DataModel.RoleUser" FromRole="Role" ToRole="User" />
+        </EntityType>
+        <Association Name="RoleUser">
+          <End Type="DataModel.Role" Role="Role" Multiplicity="*" />
+          <End Type="DataModel.User" Role="User" Multiplicity="*" />
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs" Space="C-S">
+        <Alias Key="Model" Value="DataModel" />
+        <Alias Key="Target" Value="DataModel.Store" />
+        <EntityContainerMapping CdmEntityContainer="DataModelContainer" StorageEntityContainer="DataModelTargetContainer">
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <edmx:Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </edmx:Connection>
+    <edmx:Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="False" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Ninguno" />
+      </DesignerInfoPropertySet>
+    </edmx:Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataLayer.Requests;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,7 +11,7 @@ namespace Api.Controllers
     public class ValuesController : ApiController
     {
         // GET api/values
-        public IEnumerable<string> Get()
+        public IEnumerable<string> Get([FromUri] PaginatedRequest req)
         {
             return new string[] { "value1", "value2" };
         }
