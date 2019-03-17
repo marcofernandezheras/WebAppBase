@@ -257,6 +257,14 @@
       <Project>{975cf816-2c8c-48c9-a350-4f160770a555}</Project>
       <Name>DataLayer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RepositoryLayer\RepositoryLayer.csproj">
+      <Project>{c68e3638-7d48-417c-95e2-515cdddbb469}</Project>
+      <Name>RepositoryLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceLayer\ServiceLayer.csproj">
+      <Project>{dd07e128-69d2-4337-a0c1-375dcc5df73e}</Project>
+      <Name>ServiceLayer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ValidationLayer\ValidationLayer.csproj">
       <Project>{7b1d6108-219d-4ccb-b185-355fc99078b7}</Project>
       <Name>ValidationLayer</Name>

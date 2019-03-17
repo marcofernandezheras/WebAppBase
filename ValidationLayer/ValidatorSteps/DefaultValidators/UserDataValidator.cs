@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace ValidationLayer.DefaultValidators
 {
     
-    public  class DefaultUserDataValidator : IValidatorStep<UserData>
+    internal  class DefaultUserDataValidator : IValidatorStep<UserData>
     {
     
     	bool IValidatorStep<UserData>.IsValid(UserData data, IList<InvalidProperty> errors)

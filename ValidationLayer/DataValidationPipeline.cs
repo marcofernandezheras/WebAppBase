@@ -17,7 +17,7 @@ namespace ValidationLayer.ValidationPipelines
             var type = typeof(IValidatorStep<T>);
             var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface);
+                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsAbstract);
             _validators = types.Select(t => Activator.CreateInstance(t) as IValidatorStep<T>).ToList();
         }
 

@@ -48,22 +48,70 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CRUDRepositories\CRUDrepositories.cs">
+    <Compile Include="Results\CommandResult.cs" />
+    <Compile Include="CRUDCommands\DeleteCommand.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>CRUDrepositories.tt</DependentUpon>
+      <DependentUpon>DeleteCommand.tt</DependentUpon>
     </Compile>
-    <Compile Include="CRUDRepositories\RoleRepository.cs">
-      <DependentUpon>CRUDrepositories.tt</DependentUpon>
+    <Compile Include="CRUDCommands\RoleCreateCommand.cs">
+      <DependentUpon>CreateCommand.tt</DependentUpon>
     </Compile>
-    <Compile Include="CRUDRepositories\UserProfileRepository.cs">
-      <DependentUpon>CRUDrepositories.tt</DependentUpon>
+    <Compile Include="CRUDCommands\RoleDeleteCommand.cs">
+      <DependentUpon>DeleteCommand.tt</DependentUpon>
     </Compile>
-    <Compile Include="CRUDRepositories\UserRepository.cs">
-      <DependentUpon>CRUDrepositories.tt</DependentUpon>
+    <Compile Include="CRUDCommands\RoleUpdateCommand.cs">
+      <DependentUpon>UpdateCommand.tt</DependentUpon>
     </Compile>
+    <Compile Include="CRUDCommands\UpdateCommand.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>UpdateCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CRUDCommands\CreateCommand.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CreateCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CRUDCommands\UserCreateCommand.cs">
+      <DependentUpon>CreateCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CRUDCommands\UserDeleteCommand.cs">
+      <DependentUpon>DeleteCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CRUDCommands\UserProfileCreateCommand.cs">
+      <DependentUpon>CreateCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CRUDCommands\UserProfileDeleteCommand.cs">
+      <DependentUpon>DeleteCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CRUDCommands\UserProfileUpdateCommand.cs">
+      <DependentUpon>UpdateCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CRUDCommands\UserUpdateCommand.cs">
+      <DependentUpon>UpdateCommand.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Results\FindResult.cs" />
+    <Compile Include="Interfaces\ICreateCommand.cs" />
+    <Compile Include="Interfaces\IDeleteCommand.cs" />
+    <Compile Include="Interfaces\IQuery.cs" />
+    <Compile Include="Interfaces\IUpdateCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UserRepository.cs" />
+    <Compile Include="Querys\Query.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Query.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Querys\RoleQuery.cs">
+      <DependentUpon>Query.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Querys\UserProfileQuery.cs">
+      <DependentUpon>Query.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Querys\UserQuery.cs">
+      <DependentUpon>Query.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Results\WhereResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataLayer\DataLayer.csproj">
@@ -76,9 +124,21 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CRUDRepositories\CRUDrepositories.tt">
+    <Content Include="CRUDCommands\DeleteCommand.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>CRUDrepositories.cs</LastGenOutput>
+      <LastGenOutput>DeleteCommand.cs</LastGenOutput>
+    </Content>
+    <Content Include="CRUDCommands\UpdateCommand.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>UpdateCommand.cs</LastGenOutput>
+    </Content>
+    <Content Include="CRUDCommands\CreateCommand.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>CreateCommand.cs</LastGenOutput>
+    </Content>
+    <Content Include="Querys\Query.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Query.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +157,7 @@
       <Visible>False</Visible>
     </T4ParameterValues>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />
 </Project>

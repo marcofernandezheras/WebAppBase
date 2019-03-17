@@ -282,6 +282,7 @@ public class CodeStringGenerator
 	public string DefaultCtor(EntityType entity, IEnumerable<NavigationProperty> navs){
 		var clazzName = _code.Escape(entity);
 		var builder = new StringBuilder();
+		
 		builder.Append(string.Format("public {0}Data() \r\n\t{{\r\n", clazzName));
 		foreach(var n in navs){
 			builder.Append(string.Format("\t\tthis.{0} = ", _code.Escape(n)));
@@ -304,12 +305,14 @@ public class CodeStringGenerator
 		if(navs.Any()){
 			builder.Append("\t\tif(deepCopy)\r\n\t\t{\r\n");
 			foreach(var p in navs){
+				builder.Append(string.Format("\t\t\tif(source.{0} != null)\r\n\t\t\t{{\r\n", _code.Escape(p) ));
 				if(p.ToEndMember.RelationshipMultiplicity == RelationshipMultiplicity.Many){
-					builder.Append(string.Format("\t\t\tthis.{0} = source.{0}.Select(i => new {1}Data(i, deepCopy: false)).ToList();\r\n", _code.Escape(p), _typeMapper.GetTypeName(p.ToEndMember.GetEntityType())));
+					builder.Append(string.Format("\t\t\t\tthis.{0} = source.{0}.Select(i => new {1}Data(i, deepCopy: false)).ToList();\r\n", _code.Escape(p), _typeMapper.GetTypeName(p.ToEndMember.GetEntityType())));					
 				}
 				else{
-					builder.Append(string.Format("\t\t\tthis.{0} = new {0}Data(source.{0}, deepCopy: false);\r\n", _code.Escape(p)));
+					builder.Append(string.Format("\t\t\t\tthis.{0} = new {0}Data(source.{0}, deepCopy: false);\r\n", _code.Escape(p)));
 				}
+				builder.Append("\t\t\t}\r\n");
 			}
 			builder.Append("\t\t}\r\n");
 		}
@@ -337,8 +340,8 @@ public class CodeStringGenerator
     }
     
     public string EntityClassOpening(EntityType entity)
-    {
-        return string.Format(
+    {		
+        return  string.Format(
             CultureInfo.InvariantCulture,
             "{0} {1}partial class {2}Data{3}",
             Accessibility.ForType(entity),

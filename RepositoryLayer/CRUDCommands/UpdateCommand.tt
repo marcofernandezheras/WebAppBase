@@ -2,7 +2,7 @@
 <#@ include file="EF6.Utility.CS.ttinclude"#><#@ 
  output extension=".cs"#><#
 
-const string inputFile = @"../../../DataLayer/Model/DataModel.edmx";
+const string inputFile = @"../../DataLayer/Model/DataModel.edmx";
 var textTransform = DynamicTextTransformation.Create(this);
 var code = new CodeGenerationTools(this);
 var ef = new MetadataTools(this);
@@ -20,9 +20,17 @@ WriteHeader(codeStringGenerator, fileManager);
 
 foreach (var entity in typeMapper.GetItemsToGenerate<EntityType>(itemCollection))
 {
-    fileManager.StartNewFile(entity.Name + "DataValidator.cs");
+    fileManager.StartNewFile(entity.Name + "UpdateCommand.cs");
     BeginNamespace(code);
 #>
+using DataLayer.Model;
+using DataLayer.Data;
+using System.Threading.Tasks;
+using System.Data.Entity;
+using DataLayer.Requests;
+using DataLayer.Results;
+using System.Linq;
+using RepositoryLayer.Interfaces;
 <#=codeStringGenerator.UsingDirectives(inHeader: false)#>
 <#=codeStringGenerator.EntityClassOpening(entity)#>
 {
@@ -33,8 +41,9 @@ foreach (var entity in typeMapper.GetItemsToGenerate<EntityType>(itemCollection)
     var simpleProperties = typeMapper.GetSimpleProperties(entity);
     var navigationProperties = typeMapper.GetNavigationProperties(entity);
 #>
-
-	<#=codeStringGenerator.IValidatorImpl(entity, simpleProperties)#>
+	<#=codeStringGenerator.Ctor(entity)#>
+	
+	<#=codeStringGenerator.Update(entity)#>
 }
 <#
     EndNamespace(code);
@@ -168,7 +177,7 @@ public void WriteHeader(CodeStringGenerator codeStringGenerator, EntityFramework
 
 public void BeginNamespace(CodeGenerationTools code)
 {
-    var codeNamespace = "ValidationLayer.DefaultValidators";//code.VsNamespaceSuggestion();
+    var codeNamespace = "RepositoryLayer.Repositories";//code.VsNamespaceSuggestion();
     if (!String.IsNullOrEmpty(codeNamespace))
     {
 #>
@@ -181,7 +190,7 @@ namespace <#=code.EscapeNamespace(codeNamespace)#>
 
 public void EndNamespace(CodeGenerationTools code)
 {
-    if (!String.IsNullOrEmpty("ValidationLayer.DefaultValidators"))
+    if (!String.IsNullOrEmpty("RepositoryLayer.Repositories"))
     {
         PopIndent();
 #>
@@ -221,32 +230,130 @@ public class CodeStringGenerator
             _code.SpaceAfter(Accessibility.ForSetter(edmProperty)));
     }
 
-    
-
-	public string IValidatorImpl(EntityType entity, IEnumerable<EdmProperty> props){
+    public string Ctor(EntityType entity){
 		var clazzName = _code.Escape(entity);
 		var builder = new StringBuilder();
-		builder.Append(string.Format("bool IValidatorStep<{0}Data>.IsValid({0}Data data, IList<InvalidProperty> errors)\r\n", clazzName));
-		builder.Append("\t{\r\n");
-		builder.Append("\t\tvar nullReason = \"The property can't be null\";\r\n");
-		builder.Append("\t\tvar lengthReason = \"The property can't be longer than \";\r\n");
-		foreach(var p in props){
-			if(!p.Nullable){
-				builder.Append( string.Format("\t\tif(data.{0} == null)" , p.Name) );
-				builder.Append(string.Format (" errors.Add(new InvalidProperty(nameof(data.{0}), nullReason));\r\n", p.Name));
-			}
 
-			if(p.MaxLength.HasValue){
-				builder.Append( string.Format("\t\tif(data.{0} != null && data.{0}.Length > {1})" , p.Name, p.MaxLength.Value) );
-				builder.Append(string.Format (" errors.Add(new InvalidProperty(nameof(data.{0}), lengthReason + {1}));\r\n", p.Name, p.MaxLength.Value));
-			}
-		}
-		builder.Append("\t\treturn errors.Count == 0;\r\n");
+		builder.Append("protected DataModelContainer _context;");
+		builder.AppendLine();
+		builder.AppendLine();
+		builder.Append(string.Format("\tpublic {0}UpdateCommand(DataModelContainer context)", clazzName));
+		builder.AppendLine();
+		builder.Append("\t{");
+		builder.AppendLine();
+		builder.Append("\t\t_context = context;");
+		builder.AppendLine();
 		builder.Append("\t}");
-		return builder.ToString();		
+		return builder.ToString();
 	}
 
+	public string Create(EntityType entity){
+		var clazzName = _code.Escape(entity);
+		var builder = new StringBuilder();
+		builder.Append(string.Format("public virtual async Task<{0}Data> Create({0}Data data)", clazzName));
+		builder.AppendLine();
+		builder.Append("\t{\r\n");
+		builder.Append(
+@"        var entity = data.ToEntity();
+        _context.Set(entity.GetType()).Attach(entity);
+        _context.Entry(entity).State = System.Data.Entity.EntityState.Added;
+        await _context.SaveChangesAsync();"
+		);
+		builder.AppendLine();
+		builder.Append(string.Format("\t\treturn new {0}Data(entity);", clazzName));
+		builder.AppendLine();
+		builder.Append("\t}");
+		return builder.ToString();
+	}
+
+		public string Update(EntityType entity){
+		var clazzName = _code.Escape(entity);
+		var builder = new StringBuilder();
+		builder.Append(string.Format("public virtual async Task<CommandResult<{0}Data>> Update({0}Data data)", clazzName));
+		builder.AppendLine();
+		builder.Append("\t{\r\n");
+		builder.Append(
+@"        var entity = data.ToEntity();
+        _context.Set(entity.GetType()).Attach(entity);
+        _context.Entry(entity).State = System.Data.Entity.EntityState.Modified;
+        var rows = await _context.SaveChangesAsync();
+        "
+		);
+		builder.Append(string.Format("return new CommandResult<{0}Data>(data, new {0}Data(entity), rows > 0);", clazzName));
+		builder.AppendLine();
+		builder.Append("\t}");
+		return builder.ToString();
+	}
+
+			public string Delete(EntityType entity){
+		var clazzName = _code.Escape(entity);
+		var builder = new StringBuilder();
+		builder.Append(string.Format("public virtual async Task<bool> Delete({0}Data data)", clazzName));
+		builder.AppendLine();
+		builder.Append("\t{\r\n");
+		builder.Append(
+@"        var entity = data.ToEntity();
+        _context.Set(entity.GetType()).Attach(entity);
+        _context.Entry(entity).State = System.Data.Entity.EntityState.Deleted;
+        var rows = await _context.SaveChangesAsync();
+        return rows > 0;"
+		);
+		builder.AppendLine();
+		builder.Append("\t}");
+		return builder.ToString();
+	}
+
+	public string Where(EntityType entity){
+
+		var clazzName = _code.Escape(entity);
+		var builder = new StringBuilder();
+		builder.Append(string.Format("public virtual async Task<PaginatedResult<{0}Data>> Where(PaginatedRequest req, Func<{0}, bool> predicate)", clazzName));
+		builder.AppendLine();
+		builder.Append("\t{\r\n");
+		builder.Append(string.Format("\t\tvar count = await _context.{0}Set.CountAsync(u => predicate(u));", clazzName));
+		builder.AppendLine();
+		builder.Append(string.Format("\t\tvar list = await _context.{0}Set.Where(predicate)", clazzName));
+		builder.AppendLine();
+		builder.Append(
+@"            .Skip(req.CurrentPage * req.ItemPerPage)
+            .Take(req.ItemPerPage)"
+		);
+		builder.AppendLine();
+		builder.Append(string.Format("\t\t\t.Select(i => new {0}Data(i))", clazzName));
+		builder.Append(".AsQueryable().ToListAsync();");
+		builder.AppendLine();
+		builder.Append(string.Format("\t\treturn new PaginatedResult<{0}Data>(req, totalItems: count, items: list);", clazzName));
+		builder.AppendLine();
+		builder.Append("\t}");
+		return builder.ToString();
+	}
     
+
+	public string Find(EntityType entity){
+
+		var clazzName = _code.Escape(entity);
+		var keys = entity.KeyMembers;
+
+		if(keys.Count == 1){
+			var prop = keys[0];
+			var builder = new StringBuilder();
+
+			builder.Append(string.Format("public virtual async Task<{0}Data> Find({1} id)", clazzName, _typeMapper.GetTypeName(prop.TypeUsage)));
+			builder.AppendLine();
+			builder.Append("\t{\r\n");
+
+			builder.Append(string.Format("\t\tvar entity = await _context.{0}Set.FindAsync(id);", clazzName ));
+			builder.AppendLine();
+			builder.Append(string.Format("\t\treturn new {0}Data(entity);", clazzName ));
+			builder.AppendLine();
+
+			builder.Append("\t}");
+			return builder.ToString();
+		}
+
+		return string.Empty;
+	}
+
     public string AccessibilityAndVirtual(string accessibility)
     {
         return accessibility + (accessibility != "private" ? " virtual" : "");
@@ -256,8 +363,8 @@ public class CodeStringGenerator
     {
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} class Default{2}DataValidator : IValidatorStep<{2}Data>",
-            "internal",//Accessibility.ForType(entity),
+            "{0} {1}partial class {2}UpdateCommand : IUpdateCommand<{2}Data>",
+            Accessibility.ForType(entity),
             _code.SpaceAfter(_code.AbstractOption(entity)),
             _code.Escape(entity));
     }
@@ -365,7 +472,7 @@ public class CodeStringGenerator
         return inHeader == string.IsNullOrEmpty(_code.VsNamespaceSuggestion())
             ? string.Format(
                 CultureInfo.InvariantCulture,
-                "using ValidationLayer.Interfaces;\r\nusing DataLayer.Data;\r\n{0}using System;{1}" +
+                "{0}using System;{1}" +
                 "{2}",
                 inHeader ? Environment.NewLine : "",
                 includeCollections ? (Environment.NewLine + "using System.Collections.Generic;") : "",

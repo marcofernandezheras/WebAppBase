@@ -37,7 +37,10 @@ namespace DataLayer.Data
     		this.LastSurname = source.LastSurname;
     		if(deepCopy)
     		{
-    			this.User = new UserData(source.User, deepCopy: false);
+    			if(source.User != null)
+    			{
+    				this.User = new UserData(source.User, deepCopy: false);
+    			}
     		}
     	} 
     	

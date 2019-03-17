@@ -20,7 +20,7 @@ WriteHeader(codeStringGenerator, fileManager);
 
 foreach (var entity in typeMapper.GetItemsToGenerate<EntityType>(itemCollection))
 {
-    fileManager.StartNewFile(entity.Name + "Repository.cs");
+    fileManager.StartNewFile(entity.Name + "CreateCommand.cs");
     BeginNamespace(code);
 #>
 using DataLayer.Model;
@@ -30,6 +30,7 @@ using System.Data.Entity;
 using DataLayer.Requests;
 using DataLayer.Results;
 using System.Linq;
+using RepositoryLayer.Interfaces;
 <#=codeStringGenerator.UsingDirectives(inHeader: false)#>
 <#=codeStringGenerator.EntityClassOpening(entity)#>
 {
@@ -44,13 +45,6 @@ using System.Linq;
 
 	<#=codeStringGenerator.Create(entity)#>
 
-	<#=codeStringGenerator.Update(entity)#>
-
-	<#=codeStringGenerator.Delete(entity)#>
-
-	<#=codeStringGenerator.Find(entity)#>
-
-	<#=codeStringGenerator.Where(entity)#>
 }
 <#
     EndNamespace(code);
@@ -244,7 +238,7 @@ public class CodeStringGenerator
 		builder.Append("protected DataModelContainer _context;");
 		builder.AppendLine();
 		builder.AppendLine();
-		builder.Append(string.Format("\tpublic {0}Repository(DataModelContainer context)", clazzName));
+		builder.Append(string.Format("\tpublic {0}CreateCommand(DataModelContainer context)", clazzName));
 		builder.AppendLine();
 		builder.Append("\t{");
 		builder.AppendLine();
@@ -257,7 +251,7 @@ public class CodeStringGenerator
 	public string Create(EntityType entity){
 		var clazzName = _code.Escape(entity);
 		var builder = new StringBuilder();
-		builder.Append(string.Format("public virtual async Task<{0}Data> Create({0}Data data)", clazzName));
+		builder.Append(string.Format("public virtual async Task<CommandResult<{0}Data>> Create({0}Data data)", clazzName));
 		builder.AppendLine();
 		builder.Append("\t{\r\n");
 		builder.Append(
@@ -267,7 +261,7 @@ public class CodeStringGenerator
         await _context.SaveChangesAsync();"
 		);
 		builder.AppendLine();
-		builder.Append(string.Format("\t\treturn new {0}Data(entity);", clazzName));
+		builder.Append(string.Format("\t\treturn new CommandResult<{0}Data>(data, new {0}Data(entity));", clazzName));
 		builder.AppendLine();
 		builder.Append("\t}");
 		return builder.ToString();
@@ -313,7 +307,7 @@ public class CodeStringGenerator
 
 		var clazzName = _code.Escape(entity);
 		var builder = new StringBuilder();
-		builder.Append(string.Format("public async Task<PaginatedResult<{0}Data>> Where(PaginatedRequest req, Func<{0}, bool> predicate)", clazzName));
+		builder.Append(string.Format("public virtual async Task<PaginatedResult<{0}Data>> Where(PaginatedRequest req, Func<{0}, bool> predicate)", clazzName));
 		builder.AppendLine();
 		builder.Append("\t{\r\n");
 		builder.Append(string.Format("\t\tvar count = await _context.{0}Set.CountAsync(u => predicate(u));", clazzName));
@@ -344,7 +338,7 @@ public class CodeStringGenerator
 			var prop = keys[0];
 			var builder = new StringBuilder();
 
-			builder.Append(string.Format("public async Task<{0}Data> Find({1} id)", clazzName, _typeMapper.GetTypeName(prop.TypeUsage)));
+			builder.Append(string.Format("public virtual async Task<{0}Data> Find({1} id)", clazzName, _typeMapper.GetTypeName(prop.TypeUsage)));
 			builder.AppendLine();
 			builder.Append("\t{\r\n");
 
@@ -369,7 +363,7 @@ public class CodeStringGenerator
     {
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1}partial class {2}Repository",
+            "{0} {1}partial class {2}CreateCommand : ICreateCommand<{2}Data>",
             Accessibility.ForType(entity),
             _code.SpaceAfter(_code.AbstractOption(entity)),
             _code.Escape(entity));

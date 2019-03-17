@@ -42,8 +42,14 @@ namespace DataLayer.Data
     		this.Updated = source.Updated;
     		if(deepCopy)
     		{
-    			this.UserProfile = new UserProfileData(source.UserProfile, deepCopy: false);
-    			this.Roles = source.Roles.Select(i => new RoleData(i, deepCopy: false)).ToList();
+    			if(source.UserProfile != null)
+    			{
+    				this.UserProfile = new UserProfileData(source.UserProfile, deepCopy: false);
+    			}
+    			if(source.Roles != null)
+    			{
+    				this.Roles = source.Roles.Select(i => new RoleData(i, deepCopy: false)).ToList();
+    			}
     		}
     	} 
     	

@@ -33,7 +33,10 @@ namespace DataLayer.Data
     		this.Name = source.Name;
     		if(deepCopy)
     		{
-    			this.Users = source.Users.Select(i => new UserData(i, deepCopy: false)).ToList();
+    			if(source.Users != null)
+    			{
+    				this.Users = source.Users.Select(i => new UserData(i, deepCopy: false)).ToList();
+    			}
     		}
     	} 
     	
